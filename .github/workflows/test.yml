@@ -40,14 +40,18 @@ jobs:
         run: |
           pipenv run behave
 
+      - run: touch test.txt
+        continue-on-error: True
+
+      - run: ls -la
+        continue-on-error: True
+
       - name: upload screenshots
         uses: actions/upload-artifact@v2
         with:
           path: output
           name: Download-screenshots
-
-      - run: ls -la
-        continue-on-error: True
+          retention-days: 1
 
       - run: rm -r output
         continue-on-error: True
