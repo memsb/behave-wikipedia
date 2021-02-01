@@ -20,23 +20,30 @@ def am_logged_out(context):
         return False
 
 
-def log_in(context):
-    context.driver.save_screenshot(f"output/before_login_link.png")
+def login_with_invalid_credentials(context):
+    login_with_credentials(context, os.environ.get('WIKIPEDIA_USERNAME'), "INVALID_PASSWORD")
+
+
+def login_with_credentials(context, username, password):
     login_link = context.driver.find_element_by_id("pt-login")
     login_link.click()
 
-    context.driver.save_screenshot(f"output/before_login_form.png")
     login_form = context.driver.find_element_by_name("userlogin")
     username_field = context.driver.find_element_by_id("wpName1")
     password_field = context.driver.find_element_by_id("wpPassword1")
 
-    username_field.send_keys(os.environ.get('WIKIPEDIA_USERNAME'))
-    password_field.send_keys(os.environ.get('WIKIPEDIA_PASSWORD'))
+    username_field.send_keys(username)
+    password_field.send_keys(password)
 
-    context.driver.save_screenshot(f"output/before_login_form_submit.png")
     login_form.submit()
 
-    context.driver.save_screenshot(f"output/after_login_form_submit.png")
+
+def log_in(context):
+    login_with_credentials(
+        context,
+        os.environ.get('WIKIPEDIA_USERNAME'),
+        os.environ.get('WIKIPEDIA_PASSWORD')
+    )
 
 
 def log_out(context):
@@ -46,10 +53,7 @@ def log_out(context):
 
 @given('I am on the Wikipedia homepage')
 def visit_wikipedia(context):
-    cwd = os.getcwd()
-    print(f"cwd = ${cwd}")
     context.driver.get("https://en.wikipedia.org")
-    context.driver.save_screenshot(f"output/homepage.png")
 
 
 @given('I am not logged in')
@@ -76,8 +80,6 @@ def step_impl(context, text):
     time.sleep(2)
     search_field.send_keys(Keys.ENTER)
 
-    # time.sleep(2)
-
 
 @when('I log in')
 def step_impl(context):
@@ -86,11 +88,13 @@ def step_impl(context):
 
 @when('I click the log out link')
 def step_impl(context):
-    context.driver.save_screenshot(f"output/before_logout.png")
     logout_link = context.driver.find_element_by_id("pt-logout")
     logout_link.click()
 
-    context.driver.save_screenshot(f"output/clicked_logout.png")
+
+@when('I attempt to log in with invalid credentials')
+def step_impl(context):
+    login_with_invalid_credentials(context)
 
 
 @then('I should see a search result for "{text}"')
@@ -103,12 +107,9 @@ def step_impl(context, text):
     heading = context.driver.find_element_by_id("firstHeading").text
     page_title = context.driver.title
 
-    try:
-        assert_that(page_title, contains_string(text))
-        assert_that(heading, equal_to(text))
-    except:
-        context.driver.save_screenshot(f"output/{text}.png")
-        raise
+    assert_that(page_title, contains_string(text))
+    assert_that(heading, equal_to(text))
+
 
 
 @then('I should see a welcome message')
@@ -131,17 +132,25 @@ def step_impl(context):
 
 @then('I should see a link to log in')
 def step_impl(context):
-    context.driver.save_screenshot(f"output/see_login_link.png")
     assert context.driver.find_element_by_id("pt-login").text == "Log in"
 
 
 @then('I should see a link to log out')
 def step_impl(context):
-    context.driver.save_screenshot(f"output/see_logout_link.png")
     assert context.driver.find_element_by_id("pt-logout").text == "Log out"
 
 
 @then('I will be logged out')
 def step_impl(context):
-    context.driver.save_screenshot(f"output/logged_out.png")
     assert am_logged_out(context)
+
+
+@then('I will not be logged in')
+def step_impl(context):
+    assert am_logged_out(context)
+
+
+@then('I should see a login error message')
+def step_impl(context):
+    error_box = context.driver.find_element_by_class_name('errorbox')
+    assert_that(error_box.text, contains_string("Incorrect username or password entered."))
