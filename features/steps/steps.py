@@ -46,6 +46,8 @@ def log_out(context):
 
 @given('I am on the Wikipedia homepage')
 def visit_wikipedia(context):
+    cwd = os.getcwd()
+    print(f"cwd = ${cwd}")
     context.driver.get("https://en.wikipedia.org")
     context.driver.save_screenshot(f"output/homepage.png")
 

@@ -37,14 +37,11 @@ jobs:
       - name: Test with pytest
         id: tests
         continue-on-error: True
-        run: |
-          pipenv run behave
+        run: pipenv run behave --no-capture-stderr --no-capture --no-color
 
       - run: touch test.txt
-        continue-on-error: True
 
       - run: ls -la
-        continue-on-error: True
 
       - name: upload screenshots
         uses: actions/upload-artifact@v2
