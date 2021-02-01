@@ -21,16 +21,22 @@ def am_logged_out(context):
 
 
 def log_in(context):
+    context.driver.save_screenshot(f"output/before_login_link.png")
     login_link = context.driver.find_element_by_id("pt-login")
     login_link.click()
 
+    context.driver.save_screenshot(f"output/before_login_form.png")
     login_form = context.driver.find_element_by_name("userlogin")
     username_field = context.driver.find_element_by_id("wpName1")
     password_field = context.driver.find_element_by_id("wpPassword1")
 
     username_field.send_keys(os.environ.get('WIKIPEDIA_USERNAME'))
     password_field.send_keys(os.environ.get('WIKIPEDIA_PASSWORD'))
+
+    context.driver.save_screenshot(f"output/before_login_form_submit.png")
     login_form.submit()
+
+    context.driver.save_screenshot(f"output/after_login_form_submit.png")
 
 
 def log_out(context):
@@ -72,16 +78,7 @@ def step_impl(context, text):
 
 @when('I log in')
 def step_impl(context):
-    login_link = context.driver.find_element_by_id("pt-login")
-    login_link.click()
-
-    login_form = context.driver.find_element_by_name("userlogin")
-    username_field = context.driver.find_element_by_id("wpName1")
-    password_field = context.driver.find_element_by_id("wpPassword1")
-
-    username_field.send_keys(os.environ.get('WIKIPEDIA_USERNAME'))
-    password_field.send_keys(os.environ.get('WIKIPEDIA_PASSWORD'))
-    login_form.submit()
+    log_in(context)
 
 
 @when('I click the log out link')
@@ -131,14 +128,17 @@ def step_impl(context):
 
 @then('I should see a link to log in')
 def step_impl(context):
+    context.driver.save_screenshot(f"output/see_login_link.png")
     assert context.driver.find_element_by_id("pt-login").text == "Log in"
 
 
 @then('I should see a link to log out')
 def step_impl(context):
+    context.driver.save_screenshot(f"output/see_logout_link.png")
     assert context.driver.find_element_by_id("pt-logout").text == "Log out"
 
 
 @then('I will be logged out')
 def step_impl(context):
+    context.driver.save_screenshot(f"output/logged_out.png")
     assert am_logged_out(context)
