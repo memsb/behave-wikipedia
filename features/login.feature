@@ -1,6 +1,5 @@
 Feature: Login
 
-  @wip
   Scenario: Log in link
     Given I am on the Wikipedia homepage
     And I am not logged in
