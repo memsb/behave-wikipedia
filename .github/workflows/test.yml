@@ -42,6 +42,7 @@ jobs:
       - run: touch test.txt
 
       - run: ls -la
+      - run: ls -la /home/runner/work/behave-wikipedia/behave-wikipedia
 
       - name: upload screenshots
         uses: actions/upload-artifact@v2
