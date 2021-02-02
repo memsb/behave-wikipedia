@@ -34,7 +34,7 @@ jobs:
         run: |
           pipenv install --deploy --dev
 
-      - name: Test with pytest
+      - name: Test with Behave
         id: tests
         continue-on-error: True
         run: pipenv run behave
