@@ -80,7 +80,7 @@ def step_impl(context, text):
 @then('I should see a welcome message')
 def step_impl(context):
     home_page = HomePage(context.driver)
-    assert_that(home_page.get_welcome_message(), contains_string("Welcome to Wikipedia"))
+    assert_that(home_page.get_welcome_message(), contains_string("Welcome to Wikipedia!"))
 
 
 @then('I should see a section titled "{title}"')
