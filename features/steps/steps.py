@@ -1,54 +1,9 @@
-import time
 import os
-from hamcrest import *
+
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.keys import Keys
 
-
-def am_logged_in(context):
-    try:
-        return context.driver.find_element_by_id("pt-logout").text == "Log out" \
-               and context.driver.find_element_by_id("pt-userpage")
-    except NoSuchElementException:
-        return False
-
-
-def am_logged_out(context):
-    try:
-        return context.driver.find_element_by_id("pt-login").text == "Log in"
-    except NoSuchElementException:
-        return False
-
-
-def login_with_invalid_credentials(context):
-    login_with_credentials(context, os.environ.get('WIKIPEDIA_USERNAME'), "INVALID_PASSWORD")
-
-
-def login_with_credentials(context, username, password):
-    login_link = context.driver.find_element_by_id("pt-login")
-    login_link.click()
-
-    login_form = context.driver.find_element_by_name("userlogin")
-    username_field = context.driver.find_element_by_id("wpName1")
-    password_field = context.driver.find_element_by_id("wpPassword1")
-
-    username_field.send_keys(username)
-    password_field.send_keys(password)
-
-    login_form.submit()
-
-
-def log_in(context):
-    login_with_credentials(
-        context,
-        os.environ.get('WIKIPEDIA_USERNAME'),
-        os.environ.get('WIKIPEDIA_PASSWORD')
-    )
-
-
-def log_out(context):
-    logout_link = context.driver.find_element_by_id("pt-logout")
-    logout_link.click()
+from page import HomePage, LoginPage, ContentPage, SearchResultsPage
+from hamcrest import *
 
 
 @given('I am on the Wikipedia homepage')
@@ -58,99 +13,113 @@ def visit_wikipedia(context):
 
 @given('I am not logged in')
 def step_impl(context):
-    if am_logged_in(context):
-        log_out(context)
+    home_page = HomePage(context.driver)
+    if home_page.is_logged_in():
+        home_page.click_logout()
 
 
 @given('I am logged in')
 def step_impl(context):
-    if am_logged_out(context):
-        log_in(context)
+    username = os.environ.get('WIKIPEDIA_USERNAME')
+    password = os.environ.get('WIKIPEDIA_PASSWORD')
 
-
-@given('I visit via the url "{url}"')
-def step_impl(context, url):
-    context.driver.get(f"https://{url}")
+    home_page = HomePage(context.driver)
+    if home_page.is_logged_out():
+        home_page.click_login()
+        login_page = LoginPage(context.driver)
+        login_page.login_with_credentials(username, password)
 
 
 @when('I search for "{text}"')
 def step_impl(context, text):
-    search_field = context.driver.find_element_by_id("searchInput")
-    search_field.send_keys(text)
-    time.sleep(2)
-    search_field.send_keys(Keys.ENTER)
+    home_page = HomePage(context.driver)
+    home_page.search(text)
 
 
 @when('I log in')
 def step_impl(context):
-    log_in(context)
+    username = os.environ.get('WIKIPEDIA_USERNAME')
+    password = os.environ.get('WIKIPEDIA_PASSWORD')
+
+    home_page = HomePage(context.driver)
+    home_page.click_login()
+    login_page = LoginPage(context.driver)
+    login_page.login_with_credentials(username, password)
 
 
 @when('I click the log out link')
 def step_impl(context):
-    logout_link = context.driver.find_element_by_id("pt-logout")
-    logout_link.click()
+    home_page = HomePage(context.driver)
+    home_page.click_logout()
 
 
 @when('I attempt to log in with invalid credentials')
 def step_impl(context):
-    login_with_invalid_credentials(context)
+    username = os.environ.get('WIKIPEDIA_USERNAME')
+    password = 'INVALID_PASSWORD'
+
+    home_page = HomePage(context.driver)
+    home_page.click_login()
+    login_page = LoginPage(context.driver)
+    login_page.login_with_credentials(username, password)
 
 
 @then('I should see a search result for "{text}"')
 def step_impl(context, text):
-    context.driver.find_element_by_link_text(text)
+    results_page = SearchResultsPage(context.driver)
+    assert_that(results_page.has_search_result(text))
 
 
 @then('I should be sent to the page for "{text}"')
 def step_impl(context, text):
-    heading = context.driver.find_element_by_id("firstHeading").text
-    page_title = context.driver.title
-
-    assert_that(page_title, contains_string(text))
-    assert_that(heading, equal_to(text))
-
+    content_page = ContentPage(context.driver)
+    assert_that(content_page.get_browser_title(), contains_string(text))
+    assert_that(content_page.get_heading(), equal_to(text))
 
 
 @then('I should see a welcome message')
 def step_impl(context):
-    context.driver.find_element_by_id("mp-welcome")
+    home_page = HomePage(context.driver)
+    assert_that(home_page.get_welcome_message(), contains_string("Welcome to Wikipedia"))
 
 
 @then('I should see a section titled "{title}"')
 def step_impl(context, title):
-    section_titles = context.driver.find_elements_by_class_name("mw-headline")
-    titles = [t.text for t in section_titles]
-
-    assert title in titles
+    home_page = HomePage(context.driver)
+    assert_that(home_page.has_section_titled(title))
 
 
 @then('I should be logged in')
 def step_impl(context):
-    assert am_logged_in(context)
+    home_page = HomePage(context.driver)
+    assert_that(home_page.is_logged_in())
 
 
 @then('I should see a link to log in')
 def step_impl(context):
-    assert context.driver.find_element_by_id("pt-login").text == "Log in"
+    home_page = HomePage(context.driver)
+    assert_that(home_page.has_login_link())
 
 
 @then('I should see a link to log out')
 def step_impl(context):
-    assert context.driver.find_element_by_id("pt-logout").text == "Log out"
+    home_page = HomePage(context.driver)
+    assert_that(home_page.has_logout_link())
 
 
 @then('I will be logged out')
 def step_impl(context):
-    assert am_logged_out(context)
+    home_page = HomePage(context.driver)
+    assert_that(home_page.is_logged_out())
 
 
 @then('I will not be logged in')
 def step_impl(context):
-    assert am_logged_out(context)
+    login_page = LoginPage(context.driver)
+    assert_that(login_page.is_logged_out())
 
 
 @then('I should see a login error message')
 def step_impl(context):
-    error_box = context.driver.find_element_by_class_name('errorbox')
-    assert_that(error_box.text, contains_string("Incorrect username or password entered."))
+    login_page = LoginPage(context.driver)
+    assert_that(login_page.get_login_error(), contains_string("Incorrect username or password entered."))

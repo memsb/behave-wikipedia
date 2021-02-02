@@ -34,6 +34,20 @@ jobs:
         run: |
           pipenv install --deploy --dev
 
+      - run: mkdir output
+
       - name: Test with pytest
         id: tests
+        continue-on-error: True
         run: pipenv run behave
+
+      - name: upload screenshots
+        uses: actions/upload-artifact@v2
+        with:
+          path: output
+          name: Download-screenshots
+          retention-days: 1
+
+      - name: Check for failures
+        if: ${{steps.tests.outcome}} == 'failure'
+        run: exit 1
