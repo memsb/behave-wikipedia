@@ -27,14 +27,21 @@ class BasePage:
             return False
 
     def has_login_link(self):
-        return self.driver.find_element_by_id("pt-login").text == "Log in"
+        try:
+            return self.driver.find_element_by_id("pt-login").text == "Log in"
+        except NoSuchElementException:
+            return False
 
     def has_logout_link(self):
-        return self.driver.find_element_by_id("pt-logout").text == "Log out"
+        try:
+            return self.driver.find_element_by_id("pt-logout").text == "Log out"
+        except NoSuchElementException:
+            return False
 
     def click_login(self):
         login_link = self.driver.find_element_by_id("pt-login")
         login_link.click()
+        time.sleep(0.5)
 
     def click_logout(self):
         logout_link = self.driver.find_element_by_id("pt-logout")
@@ -61,7 +68,6 @@ class HomePage(BasePage):
         return self.driver.find_element_by_id("mp-welcome").text
 
 
-
 class SearchResultsPage(BasePage):
     def has_search_result(self, text):
         try:
@@ -86,7 +92,10 @@ class LoginPage(BasePage):
         username_field.send_keys(username)
         password_field.send_keys(password)
 
+        time.sleep(0.5)
         login_form.submit()
+
+        time.sleep(0.5)
 
     def get_login_error(self):
         return self.driver.find_element_by_class_name('errorbox').text

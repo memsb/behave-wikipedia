@@ -80,7 +80,7 @@ def step_impl(context, text):
 @then('I should see a welcome message')
 def step_impl(context):
     home_page = HomePage(context.driver)
-    assert_that(home_page.get_welcome_message(), contains_string("Welcome to Wikipedia"))
+    assert_that(home_page.get_welcome_message(), contains_string("Welcome to Wikipedia!"))
 
 
 @then('I should see a section titled "{title}"')
@@ -122,4 +122,7 @@ def step_impl(context):
 @then('I should see a login error message')
 def step_impl(context):
     login_page = LoginPage(context.driver)
-    assert_that(login_page.get_login_error(), contains_string("Incorrect username or password entered."))
+    assert_that(login_page.get_login_error(), any_of(
+        contains_string("Incorrect username or password entered."),
+        contains_string("There are problems with some of your input.")
+    ))
