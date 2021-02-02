@@ -41,14 +41,8 @@ jobs:
 
       - name: upload screenshots
         uses: actions/upload-artifact@v2
-        continue-on-error: True
+        if: always()
         with:
           path: screenshots
           name: Download-screenshots
           retention-days: 1
-
-      - run: echo ${{steps.tests.outcome}}
-
-      - name: Check for failures
-        if: ${{steps.tests.outcome}} == 'failure'
-        run: exit 1
