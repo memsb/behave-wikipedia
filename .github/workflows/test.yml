@@ -41,10 +41,12 @@ jobs:
         continue-on-error: True
         run: pipenv run behave
 
+      - run: ls -la
+
       - name: upload screenshots
         uses: actions/upload-artifact@v2
         with:
-          path: output
+          path: screenshots
           name: Download-screenshots
           retention-days: 1
 
