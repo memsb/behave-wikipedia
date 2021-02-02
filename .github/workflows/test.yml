@@ -34,8 +34,6 @@ jobs:
         run: |
           pipenv install --deploy --dev
 
-      - run: mkdir output
-
       - name: Test with pytest
         id: tests
         continue-on-error: True

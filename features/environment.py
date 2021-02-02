@@ -22,9 +22,9 @@ def before_all(context):
 
 
 def empty_screenshots_folder(folder):
-    shutil.rmtree(folder)
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+    os.makedirs(folder)
 
 
 def after_step(context, step):
