@@ -36,7 +36,6 @@ jobs:
 
       - name: Test with Behave
         id: tests
-        continue-on-error: True
         run: pipenv run behave
 
       - name: upload screenshots
